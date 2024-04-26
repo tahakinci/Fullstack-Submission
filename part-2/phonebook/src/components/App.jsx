@@ -1,38 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import personService from "../services/persons";
 import Filter from "./Filter";
 import PersonForm from "./PersonForm";
 import Numbers from "./Numbers";
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456", id: 1 },
-    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filtered, setFiltered] = useState([]);
 
+  useEffect(() => {
+    personService.getAll().then((res) => setPersons(res));
+  }, []);
+
   let validate;
 
   const addPerson = (e) => {
+    //TODO refactor(validateyi module yap ve kapsamını genişlet)
     e.preventDefault();
     checkInputSingularity();
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+    };
     if (validate.isSuccess) {
-      const newList = [
-        ...persons,
-        { name: newName, number: newNumber, id: persons.length + 1 },
-      ];
-      setPersons(newList);
-      setNewNumber("");
-      setNewName("");
+      personService.create(newPerson).then((returnedPerson) => {
+        setPersons([...persons, returnedPerson]);
+        setNewNumber("");
+        setNewName("");
+      });
+    } else {
+      if (
+        !confirm(
+          `${newName} ${validate.message}, replace the old number with a new one`
+        )
+      )
+        return;
+      const personToUpdate = persons.find((p) => p.name == newName);
+      personService
+        .update(personToUpdate.id, newPerson)
+        .then((updatedPerson) => {
+          setPersons(
+            persons.map((p) => (p.id !== personToUpdate.id ? p : updatedPerson))
+          );
+        });
     }
-    alert(validate.message);
+  };
+
+  const deletePerson = (id, person) => {
+    if (!confirm(`Delete ${person} ?`)) {
+      return;
+    }
+    personService.remove(id).then((deletedPerson) => {
+      const newList = persons.filter((p) => p.id !== deletedPerson.id);
+      setPersons(newList);
+    });
   };
 
   const checkInputSingularity = () => {
-    //TODO aynı numara yazıldığında numaranın güncellenmesini de içeren bir validation yaz.
+    //TODO aynı numara yazıldığında numaranın güncellenmesini veya aynı numara geldiğinde numaranın değişmesi içeren bir validation yaz.
     const isTaken = persons.some((person) => person.name === newName);
     isTaken
       ? (validate = {
@@ -67,7 +94,7 @@ const App = () => {
         setNewNumber={setNewNumber}
       />
       <h3>Numbers</h3>
-      <Numbers persons={persons} />
+      <Numbers persons={persons} handleDelete={deletePerson} />
     </div>
   );
 };

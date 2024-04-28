@@ -3,49 +3,61 @@ import personService from "../services/persons";
 import Filter from "./Filter";
 import PersonForm from "./PersonForm";
 import Numbers from "./Numbers";
+import Notification from "./Natification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filtered, setFiltered] = useState([]);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     personService.getAll().then((res) => setPersons(res));
   }, []);
 
-  let validate;
-
   const addPerson = (e) => {
     //TODO refactor(validateyi module yap ve kapsamını genişlet)
     e.preventDefault();
-    checkInputSingularity();
+    const areInputsUnique = persons.find(
+      (person) =>
+        person.name.toLocaleLowerCase() === newName.toLocaleLowerCase()
+    );
     const newPerson = {
       name: newName,
       number: newNumber,
     };
-    if (validate.isSuccess) {
+    if (!areInputsUnique) {
       personService.create(newPerson).then((returnedPerson) => {
         setPersons([...persons, returnedPerson]);
-        setNewNumber("");
-        setNewName("");
+
+        setNotification(`${newName} added successfully`);
       });
     } else {
       if (
-        !confirm(
-          `${newName} ${validate.message}, replace the old number with a new one`
+        confirm(
+          `${newName} is already added to phonebook, replace the old number with a new one?`
         )
-      )
-        return;
-      const personToUpdate = persons.find((p) => p.name == newName);
-      personService
-        .update(personToUpdate.id, newPerson)
-        .then((updatedPerson) => {
-          setPersons(
-            persons.map((p) => (p.id !== personToUpdate.id ? p : updatedPerson))
-          );
-        });
+      ) {
+        const personToUpdate = persons.find((p) => p.name == newName);
+        personService
+          .update(personToUpdate.id, newPerson)
+          .then((updatedPerson) => {
+            setPersons(
+              persons.map((p) =>
+                p.id !== personToUpdate.id ? p : updatedPerson
+              )
+            );
+          });
+        setNotification(`Number of ${newName} has been changed`);
+      }
+      setNewName("");
+      setNewNumber("");
     }
+    setTimeout(() => {
+      console.log("here");
+      setNotification(null);
+    }, 3000);
   };
 
   const deletePerson = (id, person) => {
@@ -56,20 +68,6 @@ const App = () => {
       const newList = persons.filter((p) => p.id !== deletedPerson.id);
       setPersons(newList);
     });
-  };
-
-  const checkInputSingularity = () => {
-    //TODO aynı numara yazıldığında numaranın güncellenmesini veya aynı numara geldiğinde numaranın değişmesi içeren bir validation yaz.
-    const isTaken = persons.some((person) => person.name === newName);
-    isTaken
-      ? (validate = {
-          isSuccess: false,
-          message: `${newName} is already added to phonebook`,
-        })
-      : (validate = {
-          isSuccess: true,
-          message: `${newName} added successfully`,
-        });
   };
 
   const handleFilter = (e) => {
@@ -83,6 +81,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={notification} />
       <h2>Phonebook</h2>
       <Filter handleFilter={handleFilter} filtered={filtered} />
       <h3>add a new</h3>

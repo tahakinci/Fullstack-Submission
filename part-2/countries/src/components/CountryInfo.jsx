@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Weather from "./Weather";
 import weatherService from "../services/weather";
 
 const CountryInfo = ({ country = [], show }) => {
@@ -23,7 +24,7 @@ const CountryInfo = ({ country = [], show }) => {
     );
   return (
     <div>
-      <div>
+      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
         <h2>{country.name.common}</h2>
         <button onClick={() => setDisplay(!display)}>hide</button>
       </div>
@@ -40,15 +41,7 @@ const CountryInfo = ({ country = [], show }) => {
         alt={country.flags.alt}
         style={{ width: "250px", marginTop: "10px" }}
       />
-      <div>
-        <h2>Weather in {country.capital[0]}</h2>
-        <p>temperature {weather.main.temp}</p>
-        <img
-          src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
-          alt=""
-        />
-        <p>wind {weather.wind.speed}</p>
-      </div>
+      <Weather capital={country.capital[0]} weather={weather} />
       <hr />
     </div>
   );

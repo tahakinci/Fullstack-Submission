@@ -10,7 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filtered, setFiltered] = useState([]);
-  const [notification, setNotification] = useState(null);
+  const [notification, setNotification] = useState([]);
 
   useEffect(() => {
     personService.getAll().then((res) => setPersons(res));
@@ -23,15 +23,17 @@ const App = () => {
       (person) =>
         person.name.toLocaleLowerCase() === newName.toLocaleLowerCase()
     );
+
     const newPerson = {
       name: newName,
       number: newNumber,
     };
+
     if (!areInputsUnique) {
       personService.create(newPerson).then((returnedPerson) => {
         setPersons([...persons, returnedPerson]);
 
-        setNotification(`${newName} added successfully`);
+        setNotification([`${newName} added successfully`, "success"]);
       });
     } else {
       if (
@@ -49,25 +51,39 @@ const App = () => {
               )
             );
           });
-        setNotification(`Number of ${newName} has been changed`);
+        setNotification([`Number of ${newName} has been changed`, "success"]);
       }
-      setNewName("");
-      setNewNumber("");
     }
     setTimeout(() => {
       console.log("here");
-      setNotification(null);
+      setNotification([]);
     }, 3000);
+    setNewName("");
+    setNewNumber("");
   };
 
   const deletePerson = (id, person) => {
     if (!confirm(`Delete ${person} ?`)) {
       return;
     }
-    personService.remove(id).then((deletedPerson) => {
-      const newList = persons.filter((p) => p.id !== deletedPerson.id);
-      setPersons(newList);
-    });
+    personService
+      .remove(id)
+      .then((deletedPerson) => {
+        console.log(deletePerson);
+        const newList = persons.filter((p) => p.id !== deletedPerson.id);
+        setPersons(newList);
+      })
+      .catch(() => {
+        setNotification([
+          `Information of ${person} has already been removed from server. Please try refresh your page`,
+          "error",
+        ]);
+
+        setTimeout(() => {
+          console.log("here");
+          setNotification([]);
+        }, 3000);
+      });
   };
 
   const handleFilter = (e) => {

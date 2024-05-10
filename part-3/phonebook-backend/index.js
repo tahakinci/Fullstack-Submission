@@ -1,7 +1,6 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
-
-app.use(express.json());
 
 let persons = [
   {
@@ -26,10 +25,21 @@ let persons = [
   },
 ];
 
+app.use(express.json());
+
+morgan.token("body", (req, res) => JSON.stringify(req.body));
+
+const loggerMiddleware = morgan(
+  ":method :url :status - :response-time ms - :body"
+);
+app.use(loggerMiddleware);
+
 app.get("/", (req, res) => {
   res.send("<h1>Hello World</h1>");
 });
+
 //TODO ana sayfaya diğer routelere linkleyecek bir şey yaz
+
 app.get("/info", (req, res) => {
   const html = `
   <div>

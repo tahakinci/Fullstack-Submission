@@ -66,37 +66,32 @@ app.delete("/api/persons/:id", (req, res, next) => {
     .catch((e) => next(e));
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body;
   let isNameUnique;
   Person.find({ name: body.name }).then((result) => (isNameUnique = result));
 
-  console.log(isNameUnique);
-  if (!body.name || !body.number) {
-    return res.status(400).json({
-      error: "The name or number is missing",
-    });
-  }
-  if (isNameUnique) {
-    return res.status(400).json({ error: "name must be unique" });
-  }
   const person = new Person({
     name: body.name,
     number: body.number,
   });
-  person.save().then((returnedPerson) => {
-    res.json(returnedPerson);
-  });
+
+  person
+    .save()
+    .then((returnedPerson) => {
+      res.json(returnedPerson);
+    })
+    .catch((e) => next(e));
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
-  const body = req.body;
-  console.log("here: ", Person.find({ name: body.name }));
-  const person = {
-    name: body.name,
-    number: body.number,
-  };
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+  const { name, number } = req.body;
+
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: "query" }
+  )
     .then((returnedPerson) => res.json(returnedPerson))
     .catch((e) => next(e));
 });

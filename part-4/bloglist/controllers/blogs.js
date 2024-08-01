@@ -29,4 +29,33 @@ blogRouter.post("/", async (req, res, next) => {
   }
 });
 
+blogRouter.delete("/", async (req, res, next) => {
+  const { id } = req.params;
+  await Blog.findOneAndDelete(id);
+
+  res.status(204).end();
+});
+
+blogRouter.put("/", async (req, res, next) => {
+  try {
+    const body = req.body;
+    const { id } = req.params;
+
+    const updateBlog = {
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes ? body.likes : 0,
+    };
+
+    await Blog.findByIdAndUpdate(id);
+    res.status(201).json(updateBlog);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ error: error.message });
+    }
+    next(error);
+  }
+});
+
 module.exports = blogRouter;

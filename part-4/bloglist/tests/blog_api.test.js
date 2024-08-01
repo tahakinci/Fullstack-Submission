@@ -98,6 +98,41 @@ test("if title or url missing in newBlog, should return 400", async () => {
 
   await api.post("/api/blogs").expect(400);
 });
+
+test("when valid id given, should delete that blog", async () => {
+  const blogsAtBegining = await helper.blogsInDb();
+  const blogToDelte = blogsAtBegining[0];
+
+  await api.delete("/api/blogs").send(blogToDelte).expect(204);
+
+  const blogAtEnd = await helper.blogsInDb();
+
+  assert.strictEqual(blogAtEnd.length, blogsAtBegining.length - 1);
+});
+
+test("when valid id with valid object given, should update successfully", async () => {
+  const blogs = await helper.blogsInDb();
+  const blogToUpdate = blogs[0];
+  const blogObj = {
+    title: "updated title",
+    author: "updated author",
+    url: "updatedUrl.com",
+    likes: 3,
+  };
+
+  await api
+    .post("/api/blogs")
+    .send(blogObj)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+
+  const blogsAtEnd = await helper.blogsInDb();
+  const updatedBlog = blogsAtEnd.find((blog) => blog.id === blogToUpdate.id);
+  assert(updatedBlog.title, "updated title");
+  assert(updatedBlog.author, "test-author");
+  assert(updatedBlog.url, "updatedUrl.com");
+  assert(updatedBlog.likes, 3);
+});
 after(async () => {
   await mongoose.connection.close();
 });

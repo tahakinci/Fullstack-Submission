@@ -35,7 +35,6 @@ test("when list given, returns the blog with most like", () => {
       author: "Edsger W. Dijkstra",
       url: "https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf",
       likes: 5,
-      __v: 0,
     },
     {
       _id: "5a422aa71b54a676234d17f8",
@@ -43,7 +42,6 @@ test("when list given, returns the blog with most like", () => {
       author: "Edsger W. Dijkstra",
       url: "https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf",
       likes: 7,
-      __v: 0,
     },
     {
       _id: "5a422aa71b54a676234d17f8",

@@ -12,23 +12,26 @@ mongoose
     console.log("Error connecting to MongoDB", e.message);
   });
 
-const personSchema = new mongoose.Schema({
-  name: {
+const blogSchema = new mongoose.Schema({
+  title: {
     type: String,
     required: true,
   },
-  number: {
+  author: {
     type: String,
-    validate: {
-      validator: (v) => /^\d{2,3}-\d+$/.test(v),
-      message: (props) => `${props.value} is not valid number`,
-    },
-    minLength: 8,
     required: true,
+  },
+  url: {
+    type: String,
+    required: true,
+  },
+  likes: Number,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
 });
-
-personSchema.set("toJSON", {
+blogSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -36,4 +39,4 @@ personSchema.set("toJSON", {
   },
 });
 
-module.exports = mongoose.model("Person", personSchema);
+module.exports = mongoose.model("Blog", blogSchema);

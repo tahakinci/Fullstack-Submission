@@ -13,6 +13,12 @@ blogRouter.get("/", async (req, res) => {
   res.json(blogs);
 });
 
+blogRouter.get("/:id", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (blog) res.json(blog);
+  else res.status(404).end();
+});
+
 blogRouter.post("/", async (req, res, next) => {
   try {
     const body = req.body;
@@ -48,20 +54,20 @@ blogRouter.delete("/", async (req, res, next) => {
   res.status(204).end();
 });
 
-blogRouter.put("/", async (req, res, next) => {
+blogRouter.put("/:id", async (req, res, next) => {
   try {
     const body = req.body;
     const { id } = req.params;
 
-    const updateBlog = {
+    const updatedBlog = {
       title: body.title,
       author: body.author,
       url: body.url,
       likes: body.likes ? body.likes : 0,
     };
 
-    await Blog.findByIdAndUpdate(id);
-    res.status(201).json(updateBlog);
+    await Blog.findByIdAndUpdate(id, updatedBlog, { new: true });
+    res.status(201).json(updatedBlog);
   } catch (error) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ error: error.message });

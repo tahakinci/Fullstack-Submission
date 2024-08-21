@@ -8,8 +8,8 @@ const setToken = (newToken) => {
 };
 
 const getAll = async () => {
-  const request = await axios.get(baseUrl);
-  return request.data;
+  const req = await axios.get(baseUrl);
+  return req.data;
 };
 
 const create = async (newObject) => {
@@ -20,4 +20,20 @@ const create = async (newObject) => {
   return req.data;
 };
 
-export default { getAll, setToken, create };
+const update = async (id, newObject) => {
+  const config = {
+    headers: { Authorization: token },
+  };
+  const req = await axios.put(`${baseUrl}/${id}`, newObject, config);
+  return req.data;
+};
+
+const remove = async (id) => {
+  const config = {
+    headers: { Authorization: token },
+  };
+  const req = await axios.delete(`${baseUrl}/${id}`, config);
+  return req.data;
+};
+
+export default { getAll, setToken, create, update, remove };

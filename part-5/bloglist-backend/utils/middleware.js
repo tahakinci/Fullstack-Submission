@@ -67,7 +67,6 @@ const userExtractor = async (request, response, next) => {
     request.user = null;
   }
 
-  console.log(request.user);
   next();
 };
 

@@ -1,21 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
 import Notification from "./components/Notification";
+import Toggleable from "./components/Toggleable";
+import BlogForm from "./components/BlogForm";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [url, setUrl] = useState("");
   const [notification, setNotification] = useState(null);
 
+  const blogFormRef = useRef();
+
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    blogService.getAll().then((blogs) => {
+      const sortedBlogs = blogs.toSorted((a, b) => b.likes - a.likes);
+      setBlogs(sortedBlogs);
+    });
   }, []);
 
   useEffect(() => {
@@ -58,19 +62,10 @@ const App = () => {
     setUser(null);
   };
 
-  const addBlog = async (e) => {
-    e.preventDefault();
-    const blogObject = {
-      title: title,
-      author: author,
-      url: url,
-    };
+  const addBlog = async (blogObject) => {
+    blogFormRef.current.toggleVisibility();
     const addedBlog = await blogService.create(blogObject);
-    console.log(addedBlog);
     setBlogs(blogs.concat(addedBlog));
-    setTitle("");
-    setAuthor("");
-    setUrl("");
     setNotification({
       status: "success",
       message: `a new blog ${blogObject.title} by ${blogObject.author} added`,
@@ -78,6 +73,30 @@ const App = () => {
     setTimeout(() => {
       setNotification(null);
     }, 3000);
+  };
+
+  const handleLikes = async (id) => {
+    try {
+      const blog = blogs.find((b) => b.id === id);
+      const updatedBlog = { ...blog, likes: blog.likes + 1 };
+      const response = await blogService.update(id, updatedBlog);
+      //TODO in response there is no id so i cant use it fix that
+      const newBlogList = blogs.map((b) => (b.id === id ? updatedBlog : b));
+      setBlogs(newBlogList.sort((a, b) => b.likes - a.likes));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      if (window.confirm("Do you really want to leave?")) {
+        const response = await blogService.remove(id);
+        setBlogs(blogs.filter((b) => b.id !== id));
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const loginForm = () => (
@@ -122,37 +141,17 @@ const App = () => {
         <p>{user.name} logged in</p>
         <button onClick={handleLogout}>logout</button>
       </div>
-      <h2>Create New</h2>
-      <form onSubmit={addBlog}>
-        <div>
-          title
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div>
-          author
-          <input
-            type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-        </div>
-        <div>
-          url
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-        </div>
-        <button type="submit">create</button>
-      </form>
+      <Toggleable buttonLabel="new blog" ref={blogFormRef}>
+        <BlogForm createBlog={addBlog} />
+      </Toggleable>
 
       {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
+        <Blog
+          key={blog.id}
+          blog={blog}
+          handleLikes={handleLikes}
+          handleDelete={handleDelete}
+        />
       ))}
     </div>
   );

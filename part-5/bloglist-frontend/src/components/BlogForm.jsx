@@ -4,7 +4,7 @@ const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState("");
 
   const addBlog = (e) => {
     e.preventDefault();
@@ -39,7 +39,9 @@ const BlogForm = ({ createBlog }) => {
           likes:
           <input value={likes} onChange={(e) => setLikes(e.target.value)} />
         </div>
-        <button type="submit">create</button>
+        <button className="createButton" type="submit">
+          create
+        </button>
       </form>
     </div>
   );

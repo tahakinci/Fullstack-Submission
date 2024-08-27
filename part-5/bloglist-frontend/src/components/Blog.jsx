@@ -20,7 +20,7 @@ const Blog = ({ blog, handleLikes, handleDelete }) => {
         <h3>{blog.title}</h3>
         <button onClick={() => setVisibility(!visibilty)}>{buttonLabel}</button>
       </div>
-      <div style={toggleVisibility}>
+      <div style={toggleVisibility} className="detailDiv">
         <p>{blog.url}</p>
         <div>
           likes {blog.likes}

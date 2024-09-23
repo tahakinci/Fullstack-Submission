@@ -11,6 +11,34 @@ const AnecdoteList = () => {
     return filteredAnecdotes.sort((a, b) => b.votes - a.votes);
   });
 
+  const handleVote = (anecdote) => {
+    dispatch(vote(anecdote.id));
+
+    const notification = {
+      content: anecdote.content,
+      style: {
+        border: "solid",
+        padding: 10,
+        borderWidth: 1,
+        display: "block",
+      },
+    };
+    dispatch(getNotification(notification));
+    setTimeout(() => {
+      dispatch(
+        getNotification({
+          content: anecdote.content,
+          style: {
+            border: "solid",
+            padding: 10,
+            borderWidth: 1,
+            display: "none",
+          },
+        })
+      );
+    }, 3000);
+  };
+
   return (
     <>
       {anecdotes.map((anecdote) => (
@@ -18,14 +46,7 @@ const AnecdoteList = () => {
           <div>{anecdote.content}</div>
           <div>
             has {anecdote.votes}
-            <button
-              onClick={() => {
-                dispatch(vote(anecdote.id));
-                dispatch(getNotification(anecdote.content));
-              }}
-            >
-              vote
-            </button>
+            <button onClick={() => handleVote(anecdote)}>vote</button>
           </div>
         </div>
       ))}

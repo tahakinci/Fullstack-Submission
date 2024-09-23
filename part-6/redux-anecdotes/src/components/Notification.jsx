@@ -5,22 +5,7 @@ const Notification = () => {
     return state.notification;
   });
 
-  const style = {
-    border: "solid",
-    padding: 10,
-    borderWidth: 1,
-    display: "none",
-  };
-
-  if (notification) {
-    style.display = "block";
-
-    setTimeout(() => {
-      style.display = "none";
-    }, 3000);
-  }
-
-  return <div style={style}>{notification}</div>;
+  return <div style={notification.style}>{notification.content}</div>;
 };
 
 export default Notification;

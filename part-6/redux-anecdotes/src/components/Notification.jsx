@@ -5,7 +5,16 @@ const Notification = () => {
     return state.notification;
   });
 
-  return <div style={notification.style}>{notification.content}</div>;
+  let visibility = notification ? "block" : "none";
+
+  const style = {
+    border: "solid",
+    padding: 10,
+    borderWidth: 1,
+    display: visibility,
+  };
+
+  return <div style={style}>{notification}</div>;
 };
 
 export default Notification;

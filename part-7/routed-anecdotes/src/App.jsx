@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Routes, Route, Link, useMatch, useNavigate } from "react-router-dom";
 import { useField } from "./hooks";
+import { useDispatch, useSelector } from "react-redux";
+import { setNotification } from "./reducers/notificationReducer";
 
 const Menu = () => {
   const padding = {
@@ -123,6 +125,10 @@ const CreateNew = (props) => {
 
 const App = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const notification = useSelector((state) => {
+    return state.notification;
+  });
   const [anecdotes, setAnecdotes] = useState([
     {
       content: "If it hurts, do it more often",
@@ -140,17 +146,14 @@ const App = () => {
     },
   ]);
 
-  const [notification, setNotification] = useState("");
-
   const addNew = (anecdote) => {
     if (!anecdote.content) return;
     anecdote.id = Math.round(Math.random() * 10000);
     setAnecdotes(anecdotes.concat(anecdote));
     navigate("/anecdotes");
-    setNotification(`a new anecdote "${anecdote.content}" created!`);
-    setTimeout(() => {
-      setNotification("");
-    }, 3000);
+    dispatch(
+      setNotification(`a new anecdote "${anecdote.content}" created!`, 3)
+    );
   };
 
   const match = useMatch("/anecdotes/:id");

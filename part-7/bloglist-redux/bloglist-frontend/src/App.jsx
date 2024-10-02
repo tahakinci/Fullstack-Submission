@@ -5,84 +5,81 @@ import loginService from "./services/login";
 import Notification from "./components/Notification";
 import Toggleable from "./components/Toggleable";
 import BlogForm from "./components/BlogForm";
+import { useDispatch, useSelector } from "react-redux";
+import { setNotification } from "./reducers/notificationReducer";
+import {
+  initializeBlogs,
+  createNewBlog,
+  handleVote,
+  removeBlog,
+} from "./reducers/blogsReducer";
+import { loginUser, logoutUser, rememberUser } from "./reducers/usersReducer";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-  const [notification, setNotification] = useState(null);
+
+  const blogs = useSelector((state) => state.blogs);
+  const user = useSelector((state) => state.users);
 
   const blogFormRef = useRef();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => {
-      const sortedBlogs = blogs.toSorted((a, b) => b.likes - a.likes);
-      setBlogs(sortedBlogs);
-    });
+    dispatch(initializeBlogs());
   }, []);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
+      dispatch(rememberUser(user));
     }
   }, []);
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-
     try {
-      const user = await loginService.login({
-        username,
-        password,
-      });
-      console.log(user);
-      window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
-      blogService.setToken(user.token);
+      dispatch(loginUser(username, password));
 
-      setUser(user);
       setUsername("");
       setPassword("");
     } catch (error) {
-      setNotification({
-        status: "error",
-        message: "wrong username or password",
-      });
-      setTimeout(() => {
-        setNotification(null);
-      }, 3000);
+      dispatch(
+        setNotification(
+          {
+            status: "error",
+            message: "wrong username or password",
+          },
+          3
+        )
+      );
     }
   };
 
   const handleLogout = () => {
-    window.localStorage.removeItem("loggedBlogappUser");
-    setUser(null);
+    dispatch(logoutUser());
   };
 
-  const addBlog = async (blogObject) => {
+  const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility();
-    const addedBlog = await blogService.create(blogObject);
-    setBlogs(blogs.concat(addedBlog));
-    setNotification({
-      status: "success",
-      message: `a new blog ${blogObject.title} by ${blogObject.author} added`,
-    });
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
+    dispatch(createNewBlog(blogObject));
+    dispatch(
+      setNotification(
+        {
+          status: "success",
+          message: `a new blog ${blogObject.title} by ${blogObject.author} added`,
+        },
+        3
+      )
+    );
   };
 
-  const handleLikes = async (id) => {
+  const handleLikes = (id) => {
     try {
       const blog = blogs.find((b) => b.id === id);
       const updatedBlog = { ...blog, likes: blog.likes + 1 };
-      const response = await blogService.update(id, updatedBlog);
-      //TODO in response there is no id so i cant use it fix that
-      const newBlogList = blogs.map((b) => (b.id === id ? updatedBlog : b));
-      setBlogs(newBlogList.sort((a, b) => b.likes - a.likes));
+      dispatch(handleVote(id, updatedBlog));
     } catch (error) {
       console.log(error);
     }
@@ -91,8 +88,7 @@ const App = () => {
   const handleDelete = async (id) => {
     try {
       if (window.confirm("Do you really want to leave?")) {
-        const response = await blogService.remove(id);
-        setBlogs(blogs.filter((b) => b.id !== id));
+        dispatch(removeBlog(id));
       }
     } catch (error) {
       console.log(error);
@@ -126,7 +122,7 @@ const App = () => {
   if (user === null) {
     return (
       <div>
-        <Notification notification={notification} />
+        <Notification />
         <h2>Log in to application</h2>
         {loginForm()}
       </div>
@@ -135,7 +131,7 @@ const App = () => {
 
   return (
     <div>
-      <Notification notification={notification} />
+      <Notification />
       <h2>Blogs</h2>
       <div>
         <p>{user.name} logged in</p>

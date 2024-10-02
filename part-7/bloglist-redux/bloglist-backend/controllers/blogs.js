@@ -60,6 +60,7 @@ blogRouter.put("/:id", async (req, res, next) => {
     const { id } = req.params;
 
     const updatedBlog = {
+      id: id,
       title: body.title,
       author: body.author,
       url: body.url,

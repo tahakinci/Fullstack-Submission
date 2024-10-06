@@ -1,18 +1,25 @@
 import { createSlice } from "@reduxjs/toolkit";
 import loginService from "../services/login";
 import blogService from "../services/blogs";
+import userService from "../services/users";
 
 const usersSlice = createSlice({
   name: "users",
-  initialState: null,
+  initialState: {
+    currentUser: null,
+    allUsers: [],
+  },
   reducers: {
     setUser(state, action) {
-      return action.payload;
+      state.currentUser = action.payload;
+    },
+    setAllUsers(state, action) {
+      state.allUsers = action.payload;
     },
   },
 });
 
-const { setUser } = usersSlice.actions;
+const { setUser, setAllUsers } = usersSlice.actions;
 
 export const rememberUser = (user) => {
   return async (dispatch) => {
@@ -41,6 +48,13 @@ export const logoutUser = () => {
     await blogService.setToken(null);
     window.localStorage.removeItem("loggedBlogappUser");
     dispatch(setUser(null));
+  };
+};
+
+export const getAllUsers = () => {
+  return async (dispatch) => {
+    const users = await userService.getAll();
+    dispatch(setAllUsers(users));
   };
 };
 

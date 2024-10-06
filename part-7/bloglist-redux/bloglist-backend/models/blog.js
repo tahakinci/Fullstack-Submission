@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const comments = require("./comments");
 require("dotenv").config();
 
 const url = process.env.MONGODB_URL;
@@ -26,6 +27,12 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   likes: Number,
+  comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+    },
+  ],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

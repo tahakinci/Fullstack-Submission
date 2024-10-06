@@ -1,33 +1,21 @@
-import { useState, useEffect, useRef } from "react";
-import Blog from "./components/Blog";
-import blogService from "./services/blogs";
-import loginService from "./services/login";
+import { useState, useEffect } from "react";
 import Notification from "./components/Notification";
-import Toggleable from "./components/Toggleable";
-import BlogForm from "./components/BlogForm";
 import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
-import {
-  initializeBlogs,
-  createNewBlog,
-  handleVote,
-  removeBlog,
-} from "./reducers/blogsReducer";
 import { loginUser, logoutUser, rememberUser } from "./reducers/usersReducer";
+import Blogs from "./components/Blogs";
+import Blog from "./components/Blog";
+import Users from "./components/Users";
+import User from "./components/User";
+import { Routes, Route, Link } from "react-router-dom";
+import { Button, Container, Form } from "react-bootstrap";
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const blogs = useSelector((state) => state.blogs);
-  const user = useSelector((state) => state.users);
-
-  const blogFormRef = useRef();
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(initializeBlogs());
-  }, []);
+  const user = useSelector((state) => state.users.currentUser);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
@@ -41,7 +29,6 @@ const App = () => {
     e.preventDefault();
     try {
       dispatch(loginUser(username, password));
-
       setUsername("");
       setPassword("");
     } catch (error) {
@@ -61,95 +48,55 @@ const App = () => {
     dispatch(logoutUser());
   };
 
-  const addBlog = (blogObject) => {
-    blogFormRef.current.toggleVisibility();
-    dispatch(createNewBlog(blogObject));
-    dispatch(
-      setNotification(
-        {
-          status: "success",
-          message: `a new blog ${blogObject.title} by ${blogObject.author} added`,
-        },
-        3
-      )
-    );
-  };
-
-  const handleLikes = (id) => {
-    try {
-      const blog = blogs.find((b) => b.id === id);
-      const updatedBlog = { ...blog, likes: blog.likes + 1 };
-      dispatch(handleVote(id, updatedBlog));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      if (window.confirm("Do you really want to leave?")) {
-        dispatch(removeBlog(id));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-        <input
+    <Form onSubmit={handleLogin}>
+      <Form.Group>
+        <Form.Label>USERNAME</Form.Label>
+        <Form.Control
           type="text"
           value={username}
           name="username"
           onChange={(e) => setUsername(e.target.value)}
         />
-      </div>
-      <div>
-        password
-        <input
+      </Form.Group>
+      <Form.Group>
+        <Form.Label>PASSWORD</Form.Label>
+        <Form.Control
           type="password"
           value={password}
           name="password"
           onChange={(e) => setPassword(e.target.value)}
         />
-      </div>
-      <button type="submit">login</button>
-    </form>
+      </Form.Group>
+      <Button type="submit">LOGIN</Button>
+    </Form>
   );
 
   if (user === null) {
     return (
-      <div>
+      <Container>
         <Notification />
         <h2>Log in to application</h2>
         {loginForm()}
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div>
+    <Container>
       <Notification />
       <h2>Blogs</h2>
       <div>
-        <p>{user.name} logged in</p>
-        <button onClick={handleLogout}>logout</button>
+        <Link to="/">blogs</Link> <Link to="/users">users</Link> {user.name}{" "}
+        logged in <button onClick={handleLogout}>logout</button>
       </div>
-      <Toggleable buttonLabel="new blog" ref={blogFormRef}>
-        <BlogForm createBlog={addBlog} />
-      </Toggleable>
-
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          handleLikes={handleLikes}
-          handleDelete={handleDelete}
-        />
-      ))}
-    </div>
+      <Routes>
+        <Route path="/" element={<Blogs />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/blogs/:id" element={<Blog />} />
+      </Routes>
+    </Container>
   );
 };
 

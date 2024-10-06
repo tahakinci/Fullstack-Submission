@@ -1,41 +1,58 @@
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { handleVote, removeBlog } from "../reducers/blogsReducer";
+import Comments from "./Comments";
 
-const Blog = ({ blog, handleLikes, handleDelete }) => {
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: "solid",
-    borderWidth: 1,
-    marginBottom: 5,
+const Blog = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const blog = useSelector((state) => state.blogs).find(
+    (blog) => blog.id === id
+  );
+
+  const handleLikes = () => {
+    try {
+      const updatedBlog = { ...blog, likes: blog.likes + 1 };
+      console.log(updatedBlog);
+      dispatch(handleVote(id, updatedBlog));
+    } catch (error) {
+      console.log(error);
+    }
   };
-  const [visibilty, setVisibility] = useState(false);
 
-  const toggleVisibility = { display: visibilty ? "" : "none" };
-  const buttonLabel = visibilty ? "hide" : "view";
+  const handleDelete = async (id) => {
+    try {
+      if (window.confirm("Do you really want to leave?")) {
+        dispatch(removeBlog(id));
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  if (!blog) {
+    return null;
+  }
 
   return (
-    <div style={blogStyle}>
+    <div>
       <div>
         <h3>{blog.title}</h3>
-        <button onClick={() => setVisibility(!visibilty)}>{buttonLabel}</button>
       </div>
-      <div style={toggleVisibility} className="detailDiv">
+      <div className="detailDiv">
         <p>{blog.url}</p>
         <div>
           likes {blog.likes}
-          <button onClick={() => handleLikes(blog.id)}>like</button>
+          <button onClick={() => handleLikes(id)}>like</button>
         </div>
         <p>{blog.author}</p>
-        <button onClick={() => handleDelete(blog.id)}>remove</button>
+        <button onClick={() => handleDelete(id)}>remove</button>
       </div>
+      <Comments />
     </div>
   );
-};
-
-Blog.propTypes = {
-  handleLikes: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
 };
 
 export default Blog;

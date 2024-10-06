@@ -12,6 +12,7 @@ const blogsSlice = createSlice({
       state.push(action.payload);
     },
     updateBlog(state, action) {
+      console.log(action);
       const updatedBlog = action.payload;
       const newBlogList = state
         .map((blog) => (blog.id === updatedBlog.id ? updatedBlog : blog))
@@ -52,8 +53,12 @@ export const handleVote = (id, content) => {
 
 export const removeBlog = (id) => {
   return async (dispatch) => {
-    const deletedBlog = await blogService.remove(id);
-    dispatch(deleteBlog(id));
+    try {
+      const deletedBlog = await blogService.remove(id);
+      dispatch(deleteBlog(id));
+    } catch (error) {
+      console.log(error);
+    }
   };
 };
 

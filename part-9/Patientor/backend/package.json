@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "dev": "ts-node-dev index.ts",
+    "dev": "ts-node-dev src/index.ts",
     "lint": "eslint ."
   },
   "author": "Taha Akıncı",
@@ -13,6 +13,7 @@
   "devDependencies": {
     "@eslint/js": "^9.12.0",
     "@stylistic/eslint-plugin": "^2.9.0",
+    "@types/cors": "^2.8.17",
     "@types/eslint__js": "^8.42.3",
     "@types/express": "^5.0.0",
     "eslint": "^9.12.0",
@@ -21,6 +22,9 @@
     "typescript-eslint": "^8.9.0"
   },
   "dependencies": {
-    "express": "^4.21.1"
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
   }
 }

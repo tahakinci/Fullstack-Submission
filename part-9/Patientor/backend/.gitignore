@@ -1,0 +1,21 @@
+
+# Debug
+*.lock
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Build and output directories
+dist/
+build/
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+*.d.ts
+*.js.map
+
+# Temporary files
+temp/
+tmp/
